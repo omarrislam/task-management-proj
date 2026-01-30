@@ -1,0 +1,10 @@
+:root {
+  color-scheme: light;
+  background-color: #f6f1e9;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
