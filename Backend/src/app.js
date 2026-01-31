@@ -18,12 +18,18 @@ const app = express();
 
 app.use(helmet());
 app.use(morgan("dev"));
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "*",
-    credentials: false,
-  }),
-);
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin: allowedOrigins.length ? allowedOrigins : "*",
+  credentials: false,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "10kb" }));
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
