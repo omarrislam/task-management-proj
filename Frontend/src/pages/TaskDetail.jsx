@@ -2,14 +2,26 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createComment, listComments } from '../api/comments';
 import { deleteTask, getTask, updateTask } from '../api/tasks';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function TaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [task, setTask] = useState(null);
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const canManageTask =
+    user &&
+    (user.role === 'admin' ||
+      user.role === 'manager' ||
+      task?.assignedTo?._id === user._id ||
+      task?.assignedTo === user._id ||
+      task?.createdBy?._id === user._id ||
+      task?.createdBy === user._id);
+  const canDeleteTask =
+    user && (user.role === 'admin' || task?.createdBy?._id === user._id || task?.createdBy === user._id);
 
   const load = async () => {
     try {
@@ -69,7 +81,9 @@ export default function TaskDetail() {
           <h2>{task.title}</h2>
           <p>{task.description || 'No description'}</p>
         </div>
-        <button className="ghost" onClick={onDelete}>Delete</button>
+        {canDeleteTask && (
+          <button className="ghost" onClick={onDelete}>Delete</button>
+        )}
       </section>
       {error && <div className="alert">{error}</div>}
       <div className="grid two">
@@ -79,7 +93,7 @@ export default function TaskDetail() {
           <p className="muted">Assigned: {task.assignedTo?.name || 'Unassigned'}</p>
           <label className="select">
             Status
-            <select value={task.status} onChange={onStatusChange}>
+            <select value={task.status} onChange={onStatusChange} disabled={!canManageTask}>
               <option value="todo">Todo</option>
               <option value="doing">Doing</option>
               <option value="done">Done</option>

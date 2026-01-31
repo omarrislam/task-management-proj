@@ -2,14 +2,22 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addProjectMember, getProject, updateProject } from '../api/projects';
 import { listTasks } from '../api/tasks';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [memberId, setMemberId] = useState('');
   const [error, setError] = useState('');
+  const canManageProject =
+    user &&
+    (user.role === 'admin' ||
+      user.role === 'manager' ||
+      project?.createdBy?._id === user._id ||
+      project?.createdBy === user._id);
 
   const load = async () => {
     try {
@@ -67,9 +75,11 @@ export default function ProjectDetail() {
           <button className="ghost" onClick={() => navigate('/tasks/new')}>
             New task
           </button>
-          <button className="solid" onClick={onArchiveToggle}>
-            {project.isArchived ? 'Unarchive' : 'Archive'}
-          </button>
+          {canManageProject && (
+            <button className="solid" onClick={onArchiveToggle}>
+              {project.isArchived ? 'Unarchive' : 'Archive'}
+            </button>
+          )}
         </div>
       </section>
       {error && <div className="alert">{error}</div>}
@@ -78,22 +88,24 @@ export default function ProjectDetail() {
           <h3>Members</h3>
           <ul className="list">
             {project.members?.map((member) => (
-              <li key={member._id}>{member.name} · {member.email}</li>
+              <li key={member._id}>{member.name} - {member.email}</li>
             ))}
           </ul>
-          <form onSubmit={onAddMember} className="form compact">
-            <label>
-              Add member by userId
-              <input value={memberId} onChange={(e) => setMemberId(e.target.value)} />
-            </label>
-            <button className="ghost" type="submit">Add</button>
-          </form>
+          {canManageProject && (
+            <form onSubmit={onAddMember} className="form compact">
+              <label>
+                Add member by userId
+                <input value={memberId} onChange={(e) => setMemberId(e.target.value)} />
+              </label>
+              <button className="ghost" type="submit">Add</button>
+            </form>
+          )}
         </div>
         <div className="card">
           <h3>Tasks</h3>
           <ul className="list">
             {tasks.map((task) => (
-              <li key={task._id}>{task.title} · {task.status}</li>
+              <li key={task._id}>{task.title} - {task.status}</li>
             ))}
           </ul>
         </div>

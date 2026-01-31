@@ -44,7 +44,7 @@ function App() {
           <Route
             path="/projects/new"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'manager']}>
                 <Layout>
                   <ProjectNew />
                 </Layout>
@@ -94,7 +94,7 @@ function App() {
           <Route
             path="/activity"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'manager']}>
                 <Layout>
                   <Activity />
                 </Layout>

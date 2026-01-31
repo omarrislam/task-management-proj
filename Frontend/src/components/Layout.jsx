@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
+  const canManageProjects = user?.role === 'admin' || user?.role === 'manager';
 
   return (
     <div className="layout">
@@ -20,7 +21,7 @@ export default function Layout({ children }) {
           </NavLink>
           <NavLink to="/projects">Projects</NavLink>
           <NavLink to="/tasks">Tasks</NavLink>
-          <NavLink to="/activity">Activity</NavLink>
+          {canManageProjects && <NavLink to="/activity">Activity</NavLink>}
         </nav>
         <div className="sidebar-footer">
           <p className="user-badge">{user?.name}</p>
@@ -36,9 +37,11 @@ export default function Layout({ children }) {
             <p className="topbar-title">{user?.name}</p>
             <p className="topbar-subtitle">{user?.email}</p>
           </div>
-          <Link className="solid" to="/projects/new">
-            New project
-          </Link>
+          {canManageProjects && (
+            <Link className="solid" to="/projects/new">
+              New project
+            </Link>
+          )}
         </header>
         <div className="content">{children}</div>
       </main>

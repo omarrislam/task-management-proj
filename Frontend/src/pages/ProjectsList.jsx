@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listProjects } from '../api/projects';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ProjectsList() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
+  const canManageProjects = user?.role === 'admin' || user?.role === 'manager';
 
   useEffect(() => {
     const load = async () => {
@@ -25,9 +28,11 @@ export default function ProjectsList() {
           <h2>Projects</h2>
           <p>Manage team spaces and members.</p>
         </div>
-        <Link className="solid" to="/projects/new">
-          Create project
-        </Link>
+        {canManageProjects && (
+          <Link className="solid" to="/projects/new">
+            Create project
+          </Link>
+        )}
       </section>
       {error && <div className="alert">{error}</div>}
       <div className="grid">
